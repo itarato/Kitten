@@ -1,15 +1,17 @@
 package {
   
+  import com.hurlant.crypto.Crypto;
+  import com.hurlant.crypto.hash.HMAC;
+  import com.hurlant.util.Hex;
+  import com.kitten.network.Connection;
+  import com.kitten.util.StringUtil;
+  
   import flash.display.Sprite;
-  import flash.events.IOErrorEvent;
-  import flash.events.NetStatusEvent;
-  import flash.net.NetConnection;
-  import flash.net.NetStream;
-  import flash.net.ObjectEncoding;
+  import flash.utils.ByteArray;
 
   public class Kitten extends Sprite {
     
-    private var nc:NetConnection;
+    private var c:Connection;
     
     public function Kitten() {
       /*
@@ -33,43 +35,25 @@ package {
       // CALL METHOD
       c.call('system', 'connect');
       c.call('user', 'get', 1);
-      
-      
       */
+     
+      c = new Connection('http://l/drupal_graphmind/services/amfphp');
+      c.isSessionAuthentication = true;
+      c.setAPIKey('c50a5a0e65c8dc2bef247733bda3a8c6', 'localhost');
+      c.connectToSession(res);
       
-//      var c:Connection = new Connection('http://l/drupal_graphmind/services/amfphp', foo);
-//      c.call('system.connect');
-      
-      trace('NC');
-      nc = new NetConnection();
-      nc.client = this;
-      nc.addEventListener(IOErrorEvent.IO_ERROR, ioError);
-      nc.addEventListener(NetStatusEvent.NET_STATUS, NSnetStatus);
-      nc.objectEncoding = ObjectEncoding.AMF3;
-      nc.connect('http://l/drupal_graphmind/services/amfphp');
-      
-      //ns.objectEncoding = ObjectEncoding.AMF3;
+
     }
     
-    private function ioError(event:IOErrorEvent):void {
-      trace(event);
+    private function res(result:Object):void {
+      trace('result');
+      trace(result);
+      c.call('foo.bar', res2, 'aaa', 'bbb');
     }
     
-    private function NSnetStatus(event:NetStatusEvent):void {
-      trace(event);
-      trace('NS');
-      var ns:NetStream = new NetStream(nc);
-      ns.addEventListener(NetStatusEvent.NET_STATUS, netStatus);
-      ns.addEventListener(IOErrorEvent.IO_ERROR, ioError);
-      ns.send('system', 'connect');
-    }
-    
-    private function netStatus(event:NetStatusEvent):void {
-      trace(event);
-    }
-    
-    private function foo(result:Object):void {
-      trace('foo');
+    private function res2(result:Object):void {
+      trace('result 2');
+      trace(result);
     }
     
   }
