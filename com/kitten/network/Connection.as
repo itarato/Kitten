@@ -1,7 +1,7 @@
 package com.kitten.network {
   
-  import com.hurlant.crypto.Crypto;
   import com.hurlant.crypto.hash.HMAC;
+  import com.hurlant.crypto.hash.SHA256;
   import com.hurlant.util.Hex;
   import com.kitten.util.StringUtil;
   
@@ -34,8 +34,6 @@ package com.kitten.network {
     private var _sessID:String;
     private var _user:Object;
     
-    private var _defaultEncryptionType:String = 'sha256';
-
 
     /**
      * Constructor.
@@ -99,12 +97,12 @@ package com.kitten.network {
       var command:String = params[0];
       var date:Date = new Date();
       var timeStamp:String = Math.round(date.time / 1000).toString();
-      var nonce:String = StringUtil.getRandomSequence();
+      var nonce:String = StringUtil.getRandomSequence(10);
       var hashString:String = timeStamp + ';' + this._APIKeyDomain + ';' + nonce + ';' + command;
-      var hash:HMAC = Crypto.getHMAC(this._defaultEncryptionType);
-      var keyData:ByteArray = Hex.toArray(this._APIKey);
-      var textData:ByteArray = Hex.toArray(hashString);
-      var resultData:ByteArray = hash.compute(keyData, textData);
+      var hmac:HMAC = new HMAC(new SHA256());
+      var keyData:ByteArray = Hex.toArray(Hex.fromString(this._APIKey));
+      var textData:ByteArray = Hex.toArray(Hex.fromString(hashString));
+      var resultData:ByteArray = hmac.compute(keyData, textData);
       var resultText:String = Hex.fromArray(resultData);
       
       return params.concat([resultText, this._APIKeyDomain, timeStamp, nonce]);
