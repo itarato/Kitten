@@ -10,6 +10,9 @@ package com.kitten.util {
     public static var DIGITS:uint  = 2;
     public static var SIGNS:uint   = 4;
     
+    /**
+    * Get a random string sequence.
+    */
     public static function getRandomSequence(length:uint = 8, variationSet:uint = 1/* = LETTERS */):String {
       var chars:String = '';
       

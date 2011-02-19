@@ -1,4 +1,28 @@
 Kitten - Drupal Communication Library
 
-More documentation later.
+// CREATION
+var c:Connection = new Connection('http://example.org/');
+
+or
+
+var c:Connection = new Connection();
+c.target = 'http://example.org/';
+
+
+// AUTHENTICATION
+c.isSessionAuthentication = true;
+c.isSessionAuthentication = false;
+
+c.isAPIKeyAuthentication = true;
+c.isAPIKeyAuthentication = false;
+
+c.setApiKey('PRIVATE_KEY');
+
+
+// GET SESSION
+c.connectToSession(callbackWhenSessionIsReady);
+
+
+// CALL METHOD
+c.call('method.function', callbackForResult, param1, param2);
 

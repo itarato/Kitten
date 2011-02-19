@@ -1,3 +1,6 @@
+/**
+ * Connection handler.
+ */
 package com.kitten.network {
   
   import com.hurlant.crypto.hash.HMAC;
@@ -16,22 +19,76 @@ package com.kitten.network {
   
   public class Connection extends EventDispatcher {
   
+    /**
+    * URL to the target.
+    * In Drupal it's something like: http://host/services/amfphp
+    */
     private var _target:String;
+    
+    /**
+    * Is using session authentication.
+    */
     private var _isSessionAuthentication:Boolean = false;
+    
+    /**
+    * Is using api key authentication.
+    */
     private var _isAPIKeyAuthentication:Boolean = false;
+    
+    /**
+    * Private api key.
+    */
     private var _APIKey:String;
+    
+    /**
+    * Domain that was registered with the api key.
+    */
     private var _APIKeyDomain:String;
+    
+    /**
+    * Object encoding protocol.
+    * Usually AMF3.
+    */
     private var _objectEncoding:uint;
     
+    /**
+    * Default result callback.
+    */
     private var _resultCallback:Function;
+    
+    /**
+    * Default status callback.
+    */
     private var _statusCallback:Function;
+    
+    /**
+    * Default net status handler for the responder object.
+    */
     private var _defaultNetStatusHandler:Function;
+    
+    /**
+    * Default ioerror handler object for the responder object.
+    */
     private var _defaultIOErrorHandler:Function;
     
+    /**
+    * Net connection object.
+    */
     private var _netConnection:NetConnection;
+    
+    /**
+    * Responder object.
+    */
     private var _responder:Responder;
     
+    /**
+    * Session ID string.
+    */
     private var _sessID:String;
+    
+    /**
+    * User object of the session.
+    */
     private var _user:Object;
     
 
@@ -55,6 +112,10 @@ package com.kitten.network {
      * Class methods.
      **********************************/
      
+    /**
+    * Makes a call to the target URL.
+    * Requires a callback for the result.
+    */
     public function call(command:String, callback:Function, ...args):void {
       this.callback = callback;
       var params:Array = [command, this._responder];
@@ -72,16 +133,25 @@ package com.kitten.network {
       (this._netConnection.call as Function).apply(this._netConnection, params);
     }
     
-    public function set callback(callback:Function):void {
+    /**
+    * Saves the default result callback function.
+    */
+    private function set callback(callback:Function):void {
       this._resultCallback = callback;
       
       this._responder = new Responder(callback, _defaultStatusHandler);
     }
     
+    /**
+    * Sets the default status callback function.
+    */
     public function set statusCallback(statusCallback:Function):void {
       this._statusCallback = statusCallback;
     }
     
+    /**
+    * Connects to a Drupal site with system.connects and get it's session.
+    */
     public function connectToSession(callback:Function):void {
       this.isSessionAuthentication = true;
       
@@ -93,6 +163,9 @@ package com.kitten.network {
       });
     }
     
+    /**
+    * Adds API key authentication params to the existing param set.
+    */
     private function _performAPIKeyArguments(params:Array):Array {
       var command:String = params[0];
       var date:Date = new Date();
@@ -112,18 +185,27 @@ package com.kitten.network {
      * Net event handlers.
      **********************************/
     
+    /**
+    * Acts on network status events (Responder).
+    */
     private function _defaultStatusHandler(status:Object):void {
       if (this._statusCallback !== null) {
         this._statusCallback(status);
       }
     }
     
+    /**
+    * Acts on network status events (NetConnection).
+    */
     private function _onNetStatus(event:NetStatusEvent):void {
       if (this._defaultNetStatusHandler !== null) {
         this._defaultNetStatusHandler(event);
       }
     }
     
+    /**
+    * Acts on ioerror events (NetConnection).
+    */
     private function _onIOError(event:IOErrorEvent):void {
       if (this._defaultIOErrorHandler !== null) {
         this._defaultIOErrorHandler(event);
