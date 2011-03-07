@@ -1,5 +1,8 @@
 Kitten - Drupal Communication Library
 
+Download the compiled library:
+http://dl.dropbox.com/u/2629592/KittenFlexLib.swc
+
 // Creation
 var c:Connection = new Connection('http://example.org/');
 
