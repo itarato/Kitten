@@ -1,6 +1,6 @@
 Kitten - Drupal Communication Library
 
-// CREATION
+// Creation
 var c:Connection = new Connection('http://example.org/');
 
 or
@@ -9,20 +9,24 @@ var c:Connection = new Connection();
 c.target = 'http://example.org/';
 
 
-// AUTHENTICATION
+// Authentication
 c.isSessionAuthentication = true;
 c.isSessionAuthentication = false;
 
 c.isAPIKeyAuthentication = true;
 c.isAPIKeyAuthentication = false;
-
-c.setApiKey('PRIVATE_KEY');
-
-
-// GET SESSION
-c.connectToSession(callbackWhenSessionIsReady);
+c.setAPIKey(API_KEY, API_DOMAIN);
 
 
-// CALL METHOD
+// Attach events
+c.addEventListener(ConnectionEvent.CONNECTION_IS_READY, connectionIsReadyCallback);
+c.addEventListener(ConnectionEvent.CONNECTION_IS_FAILED, connectionHasFailedCallback);
+
+
+// Connect
+c.connect();
+
+
+// Call a remote method
 c.call('method.function', callbackForResult, param1, param2);
 
