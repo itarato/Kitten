@@ -6,6 +6,7 @@ package com.kitten.network {
   import com.hurlant.crypto.hash.HMAC;
   import com.hurlant.crypto.hash.SHA256;
   import com.hurlant.util.Hex;
+  import com.kitten.events.ConnectionEvent;
   import com.kitten.util.StringUtil;
   
   import flash.events.EventDispatcher;
@@ -17,6 +18,8 @@ package com.kitten.network {
   import flash.utils.ByteArray;
   
   
+  [Event(name="connectionIsReady",  type="com.kitten.events.ConnectionEvent")]
+  [Event(name="connectionIsFailed", type="com.kitten.events.ConnectionEvent")]
   public class Connection extends EventDispatcher {
   
     /**
@@ -52,11 +55,6 @@ package com.kitten.network {
     private var _objectEncoding:uint;
     
     /**
-    * Default result callback.
-    */
-    private var _resultCallback:Function;
-    
-    /**
     * Default status callback.
     */
     private var _statusCallback:Function;
@@ -77,11 +75,6 @@ package com.kitten.network {
     private var _netConnection:NetConnection;
     
     /**
-    * Responder object.
-    */
-    private var _responder:Responder;
-    
-    /**
     * Session ID string.
     */
     private var _sessID:String;
@@ -90,6 +83,13 @@ package com.kitten.network {
     * User object of the session.
     */
     private var _user:Object;
+    
+    /**
+    * Flag that show if the connection is live.
+    * If it's false, it doesn't mean it's not working.
+    * If it's true, it's working.
+    */
+    private var _isConnected:Boolean = false;
     
 
     /**
@@ -117,8 +117,8 @@ package com.kitten.network {
     * Requires a callback for the result.
     */
     public function call(command:String, callback:Function, ...args):void {
-      this.callback = callback;
-      var params:Array = [command, this._responder];
+      var responder:Responder = new Responder(callback, _defaultStatusHandler);
+      var params:Array = [command, responder];
       
       // Authentication check
       if (this.isAPIKeyAuthentication) {
@@ -133,35 +133,21 @@ package com.kitten.network {
       (this._netConnection.call as Function).apply(this._netConnection, params);
     }
     
-    /**
-    * Saves the default result callback function.
-    */
-    private function set callback(callback:Function):void {
-      this._resultCallback = callback;
-      
-      this._responder = new Responder(callback, _defaultStatusHandler);
-    }
     
     /**
-    * Sets the default status callback function.
+    * Connect to a site.
+    * It's not a mandatory step, but is important to know if the connection is accessible.  
     */
-    public function set statusCallback(statusCallback:Function):void {
-      this._statusCallback = statusCallback;
-    }
-    
-    /**
-    * Connects to a Drupal site with system.connects and get it's session.
-    */
-    public function connectToSession(callback:Function):void {
-      this.isSessionAuthentication = true;
-      
+    public function connect():void {
       var scope:Connection = this;
       this.call('system.connect', function(result:Object):void{
         scope.user = result.user as Object;
-        scope.sessID = result.sessid as String; 
-        callback(result);
+        scope.sessID = result.sessid as String;
+        scope._isConnected = true;
+        scope.dispatchEvent(new ConnectionEvent(ConnectionEvent.CONNECTION_IS_READY, scope));
       });
     }
+    
     
     /**
     * Adds API key authentication params to the existing param set.
@@ -189,24 +175,29 @@ package com.kitten.network {
     * Acts on network status events (Responder).
     */
     private function _defaultStatusHandler(status:Object):void {
+      this.dispatchEvent(new ConnectionEvent(ConnectionEvent.CONNECTION_IS_FAILED, this));
       if (this._statusCallback !== null) {
         this._statusCallback(status);
       }
     }
     
+    
     /**
     * Acts on network status events (NetConnection).
     */
     private function _onNetStatus(event:NetStatusEvent):void {
+      this.dispatchEvent(new ConnectionEvent(ConnectionEvent.CONNECTION_IS_FAILED, this));
       if (this._defaultNetStatusHandler !== null) {
         this._defaultNetStatusHandler(event);
       }
     }
     
+    
     /**
     * Acts on ioerror events (NetConnection).
     */
     private function _onIOError(event:IOErrorEvent):void {
+      this.dispatchEvent(new ConnectionEvent(ConnectionEvent.CONNECTION_IS_FAILED, this));
       if (this._defaultIOErrorHandler !== null) {
         this._defaultIOErrorHandler(event);
       }
@@ -263,6 +254,10 @@ package com.kitten.network {
     
     public function set sessID(sessID:String):void {
       this._sessID = sessID;
+    }
+    
+    public function get isConnected():Boolean {
+      return this._isConnected;
     }
 
   }
