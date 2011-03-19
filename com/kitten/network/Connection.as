@@ -85,6 +85,16 @@ package com.kitten.network {
     private var _user:Object;
     
     /**
+    * User name.
+    */
+    private var _userName:String;
+    
+    /**
+    * User password.
+    */
+    private var _userPassword:String;
+    
+    /**
     * Flag that show if the connection is live.
     * If it's false, it doesn't mean it's not working.
     * If it's true, it's working.
@@ -102,9 +112,7 @@ package com.kitten.network {
       this._netConnection.addEventListener(NetStatusEvent.NET_STATUS, _onNetStatus);
       this._netConnection.addEventListener(IOErrorEvent.IO_ERROR, _onIOError);
       
-      if (target !== null) {
-        this.target = target;
-      }
+      this.target = target;
     }
     
     
@@ -166,6 +174,14 @@ package com.kitten.network {
       
       return params.concat([resultText, this._APIKeyDomain, timeStamp, nonce]);
     }
+
+    /**
+    * Do a user login with the stored credentials.
+    */    
+    public function loginToDrupal(callback:Function):void {
+      this.call('user.login', callback, this._userName, this._userPassword);
+    }
+    
     
     /**********************************
      * Net event handlers.
@@ -175,7 +191,7 @@ package com.kitten.network {
     * Acts on network status events (Responder).
     */
     private function _defaultStatusHandler(status:Object):void {
-      this.dispatchEvent(new ConnectionEvent(ConnectionEvent.CONNECTION_IS_FAILED, this));
+      this.dispatchEvent(new ConnectionEvent(ConnectionEvent.CONNECTION_IS_FAILED, this, status));
       if (this._statusCallback !== null) {
         this._statusCallback(status);
       }
@@ -186,7 +202,7 @@ package com.kitten.network {
     * Acts on network status events (NetConnection).
     */
     private function _onNetStatus(event:NetStatusEvent):void {
-      this.dispatchEvent(new ConnectionEvent(ConnectionEvent.CONNECTION_IS_FAILED, this));
+      this.dispatchEvent(new ConnectionEvent(ConnectionEvent.CONNECTION_IS_FAILED, this, event));
       if (this._defaultNetStatusHandler !== null) {
         this._defaultNetStatusHandler(event);
       }
@@ -197,7 +213,7 @@ package com.kitten.network {
     * Acts on ioerror events (NetConnection).
     */
     private function _onIOError(event:IOErrorEvent):void {
-      this.dispatchEvent(new ConnectionEvent(ConnectionEvent.CONNECTION_IS_FAILED, this));
+      this.dispatchEvent(new ConnectionEvent(ConnectionEvent.CONNECTION_IS_FAILED, this, event));
       if (this._defaultIOErrorHandler !== null) {
         this._defaultIOErrorHandler(event);
       }
@@ -209,6 +225,8 @@ package com.kitten.network {
      **********************************/
     
     public function set target(target:String):void {
+      if (target.match(/^(http|www).{1,}$/gi).length <= 0) return;
+      
       this._target = target;
       
       this._netConnection.connect(this._target);
@@ -258,6 +276,14 @@ package com.kitten.network {
     
     public function get isConnected():Boolean {
       return this._isConnected;
+    }
+    
+    public function set userName(userName:String):void {
+      this._userName = userName;
+    }
+    
+    public function set userPassword(userPassword:String):void {
+      this._userPassword = userPassword;
     }
 
   }
