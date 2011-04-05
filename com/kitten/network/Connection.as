@@ -20,8 +20,9 @@ package com.kitten.network {
   import flash.utils.ByteArray;
   
   
-  [Event(name="connectionIsReady",  type="com.kitten.events.ConnectionEvent")]
-  [Event(name="connectionIsFailed", type="com.kitten.events.ConnectionEvent")]
+  [Event(name="connectionIsReady", type="com.kitten.events.ConnectionEvent")]
+  [Event(name="ioErrorEvent",      type="com.kitten.events.ConnectionIOErrorEvent")]
+  [Event(name="netStatusEvent",    type="com.kitten.events.ConnectionNetStatusEvent")]
   public class Connection extends EventDispatcher {
   
     /**
@@ -55,16 +56,6 @@ package com.kitten.network {
     * Usually AMF3.
     */
     private var _objectEncoding:uint;
-    
-    /**
-    * Default net status handler for the responder object.
-    */
-    private var _defaultNetStatusHandler:Function;
-    
-    /**
-    * Default ioerror handler object for the responder object.
-    */
-    private var _defaultIOErrorHandler:Function;
     
     /**
     * Net connection object.
@@ -107,7 +98,7 @@ package com.kitten.network {
       this._netConnection.objectEncoding = ObjectEncoding.AMF3;
       
       this._netConnection.addEventListener(NetStatusEvent.NET_STATUS, _onNetStatus);
-      this._netConnection.addEventListener(IOErrorEvent.IO_ERROR, _onIOError);
+      this._netConnection.addEventListener(IOErrorEvent.IO_ERROR,     _onIOError);
       
       this.target = target;
     }
@@ -122,10 +113,6 @@ package com.kitten.network {
     * Requires a callback for the result.
     */
     public function call(command:String, callback:Function, errorCallback:Function = null, ...args):void {
-      if (errorCallback == null) {
-        errorCallback = _defaultIOErrorHandler;
-      }
-      
       var responder:Responder = new Responder(callback, errorCallback);
       var params:Array = [command, responder];
       
@@ -176,6 +163,7 @@ package com.kitten.network {
       return params.concat([resultText, this._APIKeyDomain, timeStamp, nonce]);
     }
 
+
     /**
     * Do a user login with the stored credentials.
     */    
@@ -193,9 +181,6 @@ package com.kitten.network {
     */
     private function _onNetStatus(event:NetStatusEvent):void {
       this.dispatchEvent(new ConnectionNetStatusEvent(ConnectionEvent.CONNECTION_IS_FAILED, this, event));
-      if (this._defaultNetStatusHandler !== null) {
-        this._defaultNetStatusHandler(event);
-      }
     }
     
     
@@ -204,9 +189,6 @@ package com.kitten.network {
     */
     private function _onIOError(event:IOErrorEvent):void {
       this.dispatchEvent(new ConnectionIOErrorEvent(ConnectionEvent.CONNECTION_IS_FAILED, this, event));
-      if (this._defaultIOErrorHandler !== null) {
-        this._defaultIOErrorHandler(event);
-      }
     }
     
     
@@ -274,14 +256,6 @@ package com.kitten.network {
     
     public function set userPassword(userPassword:String):void {
       this._userPassword = userPassword;
-    }
-    
-    public function set ioErrorCallback(callback:Function):void {
-      _defaultIOErrorHandler = callback;
-    }
-    
-    public function set netStatusCallback(callback:Function):void {
-      _defaultNetStatusHandler = callback;
     }
     
     

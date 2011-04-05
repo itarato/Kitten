@@ -6,6 +6,8 @@ package com.kitten.events {
 
   public class ConnectionNetStatusEvent extends ConnectionEvent {
     
+    public static var NET_STATUS_EVENT:String = 'netStatusEvent';
+    
     public var netStatusEvent:NetStatusEvent;
     
     public function ConnectionNetStatusEvent(type:String, connection:Connection, netStatusEvent:NetStatusEvent) {
