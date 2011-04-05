@@ -180,7 +180,7 @@ package com.kitten.network {
     * Acts on network status events (NetConnection).
     */
     private function _onNetStatus(event:NetStatusEvent):void {
-      this.dispatchEvent(new ConnectionNetStatusEvent(ConnectionEvent.CONNECTION_IS_FAILED, this, event));
+      this.dispatchEvent(new ConnectionNetStatusEvent(ConnectionNetStatusEvent.NET_STATUS_EVENT, this, event));
     }
     
     
@@ -188,7 +188,7 @@ package com.kitten.network {
     * Acts on ioerror events (NetConnection).
     */
     private function _onIOError(event:IOErrorEvent):void {
-      this.dispatchEvent(new ConnectionIOErrorEvent(ConnectionEvent.CONNECTION_IS_FAILED, this, event));
+      this.dispatchEvent(new ConnectionIOErrorEvent(ConnectionIOErrorEvent.IO_ERROR_EVENT, this, event));
     }
     
     

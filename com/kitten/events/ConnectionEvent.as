@@ -13,11 +13,6 @@ package com.kitten.events {
     * Fired when the connection is ready and working.
     */
     public static var CONNECTION_IS_READY:String = 'connectionIsReady';
-    
-    /**
-    * Fired when the initial connection try failed.
-    */
-    public static var CONNECTION_IS_FAILED:String = 'connectionIsFailed';
   
     /**
     * Connection object itself.
