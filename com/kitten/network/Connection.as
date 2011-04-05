@@ -7,6 +7,8 @@ package com.kitten.network {
   import com.hurlant.crypto.hash.SHA256;
   import com.hurlant.util.Hex;
   import com.kitten.events.ConnectionEvent;
+  import com.kitten.events.ConnectionIOErrorEvent;
+  import com.kitten.events.ConnectionNetStatusEvent;
   import com.kitten.util.StringUtil;
   
   import flash.events.EventDispatcher;
@@ -53,11 +55,6 @@ package com.kitten.network {
     * Usually AMF3.
     */
     private var _objectEncoding:uint;
-    
-    /**
-    * Default status callback.
-    */
-    private var _statusCallback:Function;
     
     /**
     * Default net status handler for the responder object.
@@ -124,8 +121,12 @@ package com.kitten.network {
     * Makes a call to the target URL.
     * Requires a callback for the result.
     */
-    public function call(command:String, callback:Function, ...args):void {
-      var responder:Responder = new Responder(callback, _defaultStatusHandler);
+    public function call(command:String, callback:Function, errorCallback:Function = null, ...args):void {
+      if (errorCallback == null) {
+        errorCallback = _defaultIOErrorHandler;
+      }
+      
+      var responder:Responder = new Responder(callback, errorCallback);
       var params:Array = [command, responder];
       
       // Authentication check
@@ -179,7 +180,7 @@ package com.kitten.network {
     * Do a user login with the stored credentials.
     */    
     public function loginToDrupal(callback:Function):void {
-      this.call('user.login', callback, this._userName, this._userPassword);
+      this.call('user.login', callback, null, this._userName, this._userPassword);
     }
     
     
@@ -188,21 +189,10 @@ package com.kitten.network {
      **********************************/
     
     /**
-    * Acts on network status events (Responder).
-    */
-    private function _defaultStatusHandler(status:Object):void {
-      this.dispatchEvent(new ConnectionEvent(ConnectionEvent.CONNECTION_IS_FAILED, this, status));
-      if (this._statusCallback !== null) {
-        this._statusCallback(status);
-      }
-    }
-    
-    
-    /**
     * Acts on network status events (NetConnection).
     */
     private function _onNetStatus(event:NetStatusEvent):void {
-      this.dispatchEvent(new ConnectionEvent(ConnectionEvent.CONNECTION_IS_FAILED, this, event));
+      this.dispatchEvent(new ConnectionNetStatusEvent(ConnectionEvent.CONNECTION_IS_FAILED, this, event));
       if (this._defaultNetStatusHandler !== null) {
         this._defaultNetStatusHandler(event);
       }
@@ -213,7 +203,7 @@ package com.kitten.network {
     * Acts on ioerror events (NetConnection).
     */
     private function _onIOError(event:IOErrorEvent):void {
-      this.dispatchEvent(new ConnectionEvent(ConnectionEvent.CONNECTION_IS_FAILED, this, event));
+      this.dispatchEvent(new ConnectionIOErrorEvent(ConnectionEvent.CONNECTION_IS_FAILED, this, event));
       if (this._defaultIOErrorHandler !== null) {
         this._defaultIOErrorHandler(event);
       }
@@ -284,6 +274,14 @@ package com.kitten.network {
     
     public function set userPassword(userPassword:String):void {
       this._userPassword = userPassword;
+    }
+    
+    public function set ioErrorCallback(callback:Function):void {
+      _defaultIOErrorHandler = callback;
+    }
+    
+    public function set netStatusCallback(callback:Function):void {
+      _defaultNetStatusHandler = callback;
     }
     
     

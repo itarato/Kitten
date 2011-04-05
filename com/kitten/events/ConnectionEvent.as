@@ -24,18 +24,12 @@ package com.kitten.events {
     */  
     public var connection:Connection;
     
-    /**
-    * Original event object.
-    */
-    public var origialResponse:Object;
-    
     
     /**
     * Constructor.
     */
-    public function ConnectionEvent(type:String, connection:Connection, origialResponse:Object = null) {
+    public function ConnectionEvent(type:String, connection:Connection) {
       this.connection = connection;
-      this.origialResponse = origialResponse;
       super(type);
     }
     
