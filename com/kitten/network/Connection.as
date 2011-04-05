@@ -218,14 +218,14 @@ package com.kitten.network {
         this._defaultIOErrorHandler(event);
       }
     }
-   
-     
+    
+    
     /**********************************
      * Getters and setters.
      **********************************/
     
     public function set target(target:String):void {
-      if (target.match(/^(http|www).{1,}$/gi).length <= 0) return;
+      if (!(target is String) || target.match(/^(http|www).{1,}$/gi).length <= 0) return;
       
       this._target = target;
       
@@ -284,6 +284,14 @@ package com.kitten.network {
     
     public function set userPassword(userPassword:String):void {
       this._userPassword = userPassword;
+    }
+    
+    
+    /**********************************
+    * Overrides.
+    ***********************************/
+    public override function toString():String {
+      return this.target.toString().replace(/http:\/\//gi, '').replace(/www\./gi, '');
     }
 
   }

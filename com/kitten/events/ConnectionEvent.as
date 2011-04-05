@@ -33,10 +33,10 @@ package com.kitten.events {
     /**
     * Constructor.
     */
-    public function ConnectionEvent(type:String, connection:Connection, origialResponse:Object = null, bubbles:Boolean=false, cancelable:Boolean=false) {
+    public function ConnectionEvent(type:String, connection:Connection, origialResponse:Object = null) {
       this.connection = connection;
       this.origialResponse = origialResponse;
-      super(type, bubbles, cancelable);
+      super(type);
     }
     
   }
