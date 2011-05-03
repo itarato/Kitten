@@ -121,11 +121,14 @@ package com.kitten.network {
         params = this._performAPIKeyArguments(params);
       }
       
-      if (this.isSessionAuthentication) {
+      if (this.isSessionAuthentication && this._sessID) {
         params = params.concat([this._sessID]);
       }
       
-      params = params.concat(args);
+      if (args && args.length > 0) {
+        params = params.concat(args);
+      }
+      
       (this._netConnection.call as Function).apply(this._netConnection, params);
     }
     
@@ -141,6 +144,8 @@ package com.kitten.network {
         scope.sessID = result.sessid as String;
         scope._isConnected = true;
         scope.dispatchEvent(new ConnectionEvent(ConnectionEvent.CONNECTION_IS_READY, scope));
+      }, function(error_result:Object):void{
+        trace('Error');
       });
     }
     
