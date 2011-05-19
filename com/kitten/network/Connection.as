@@ -26,10 +26,14 @@ package com.kitten.network {
   public class Connection extends EventDispatcher {
   
     /**
-    * URL to the target.
-    * In Drupal it's something like: http://host/services/amfphp
+    * Base path.
     */
-    private var _target:String;
+    private var _basePath:String;
+    
+    /**
+    * Endpoint path.
+    */
+    private var _endPoint:String;
     
     /**
     * Is using session authentication.
@@ -93,14 +97,14 @@ package com.kitten.network {
     /**
      * Constructor.
      */     
-    public function Connection(target:String = null) {
+    public function Connection(basePath:String, endPoint:String) {
       this._netConnection = new NetConnection();
       this._netConnection.objectEncoding = ObjectEncoding.AMF3;
       
       this._netConnection.addEventListener(NetStatusEvent.NET_STATUS, _onNetStatus);
       this._netConnection.addEventListener(IOErrorEvent.IO_ERROR,     _onIOError);
       
-      this.target = target;
+      this.setTarget(basePath, endPoint);
     }
     
     
@@ -201,16 +205,21 @@ package com.kitten.network {
      * Getters and setters.
      **********************************/
     
-    public function set target(target:String):void {
-      if (!(target is String) || target.match(/^(http|www).{1,}$/gi).length <= 0) return;
+    public function setTarget(basePath:String, endPoint:String):void {
+      if (!(basePath is String) || basePath.match(/^(http|www).{1,}$/gi).length <= 0) return;
       
-      this._target = target;
+      this._basePath = basePath;
+      this._endPoint = endPoint;
       
-      this._netConnection.connect(this._target);
+      this._netConnection.connect(this._basePath + this._endPoint);
     }
     
-    public function get target():String {
-      return this._target;
+    public function get basePath():String {
+      return this._basePath;
+    }
+    
+    public function get endPoint():String {
+      return this._endPoint;
     }
     
     public function set isSessionAuthentication(isSessionAuthentication:Boolean):void {
@@ -268,7 +277,7 @@ package com.kitten.network {
     * Overrides.
     ***********************************/
     public override function toString():String {
-      return this.target.toString().replace(/http:\/\//gi, '').replace(/www\./gi, '');
+      return this._basePath.toString().replace(/http:\/\//gi, '').replace(/www\./gi, '');
     }
 
   }
